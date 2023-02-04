@@ -1,3 +1,9 @@
+## DeSKO: Deep Stochstic Koopman Operator
+
+This is the code for ICLR 2022 paper: 
+[DeSKO: Stability-Assured Robust Control with a Deep Stochastic Koopman Operator](https://openreview.net/pdf?id=hniLRD_XCA)
+Minghao Han, Jacob Euler-Rolle, Robert K Katzschmann
+
 ## Conda environment
 From the general python package sanity perspective, it is a good idea to use conda environments to make sure packages from different projects do not interfere with each other.
 
