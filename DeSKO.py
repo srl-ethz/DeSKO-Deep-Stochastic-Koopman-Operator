@@ -120,52 +120,22 @@ class Koopman(base_Koopman):
 
         phi_t = self.stochastic_latent[:, 0]
         mean_t = self.mean[:, 0]
-        sigma_t = self.sigma[:, 0]
 
         for t in range(args['pred_horizon']-1):
             phi_t = tf.matmul(phi_t, self.A) + tf.matmul(self.a_input[:, t], self.B)
             x_t = tf.matmul(phi_t, self.C)
             mean_t = tf.matmul(mean_t, self.A) + tf.matmul(self.a_input[:, t], self.B)
-            sigma_t = tf.matmul(sigma_t, self.A) + tf.matmul(self.a_input[:, t], self.B)
             x_mean_t = tf.matmul(mean_t, self.C)
             forward_pred.append(x_t)
             mean_forward_pred.append(mean_t)
             x_mean_forward_pred.append(x_mean_t)
-            sigma_forward_pred.append(sigma_t)
 
         self.forward_pred = tf.stack(forward_pred, axis=1)
         self.x_mean_forward_pred = tf.stack(x_mean_forward_pred, axis=1)
         self.mean_forward_pred = tf.stack(mean_forward_pred, axis=1)
-        self.sigma_forward_pred = tf.stack(sigma_forward_pred, axis=1)
         return
 
     def _create_backward_pred(self, args):
-        """
-        Iteratively predict the past states with the Koopman operator
-        :param args:
-        :return:
-        """
-        # backward_pred = []
-        # mean_backward_pred = []
-        # sigma_backward_pred = []
-        #
-        # phi_t = tf.concat([self.x_input[:, -1], self.stochastic_latent[:, -1]], axis=1)
-        # mean_t = tf.concat([self.x_input[:, 0], self.mean[:, 0]], axis=1)
-        # sigma_t = tf.concat([self.x_input[:, 0], self.sigma[:, 0]], axis=1)
-        # for t in range(args['pred_horizon'] - 1, 0, -1):
-        #     phi_t = tf.matmul(phi_t - tf.matmul(self.a_input[:, t-1], self.B), self.A_inv)
-        #     mean_t = tf.matmul(mean_t - tf.matmul(self.a_input[:, t - 1], self.B), self.A_inv)
-        #     sigma_t = tf.matmul(sigma_t - tf.matmul(self.a_input[:, t - 1], self.B), self.A_inv)
-        #     backward_pred.append(phi_t)
-        #     mean_backward_pred.append(mean_t)
-        #     sigma_backward_pred.append(sigma_t)
-        #
-        # backward_pred = tf.stack(backward_pred, axis=1)
-        # mean_backward_pred = tf.stack(mean_backward_pred, axis=1)
-        # sigma_backward_pred = tf.stack(sigma_backward_pred, axis=1)
-        # self.backward_pred = tf.reverse(backward_pred, [1])
-        # self.mean_backward_pred = tf.reverse(mean_backward_pred, [1])
-        # self.sigma_backward_pred = tf.reverse(sigma_backward_pred, [1])
 
         return
 
@@ -181,8 +151,7 @@ class Koopman(base_Koopman):
 
 
 
-        forward_pred_loss = tf.losses.mean_squared_error(labels=tf.stop_gradient(self.mean[:, 1:]), predictions=self.mean_forward_pred[:, :])\
-                            + tf.losses.mean_squared_error(labels=tf.stop_gradient(self.sigma[:, 1:]), predictions=self.sigma_forward_pred[:, :])
+        forward_pred_loss = tf.losses.mean_squared_error(labels=tf.stop_gradient(self.mean[:, 1:]), predictions=self.mean_forward_pred[:, :])
 
         self.reconstruct_loss = reconstruct_loss = tf.losses.mean_squared_error(labels=self.x_input[:, 1:],
                                                         predictions=self.forward_pred[:, :])

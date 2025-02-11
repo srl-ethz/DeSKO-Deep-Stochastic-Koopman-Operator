@@ -820,19 +820,17 @@ class Stochastic_MPC_with_observation_v2(Stochastic_MPC_with_observation):
         constraints += [self.sigma[:, 0] == self.sigma_t[:, 0]]
         for k in range(self.pred_horizon):
             X_mean = vstack([reshape(self.mean[:, k], (self.latent_dim,1)), reshape(self.ref, (self.state_dim,1))])[:,0]
-            X_sigma = vstack([reshape(self.sigma[:, k], (self.latent_dim, 1)), np.zeros([self.state_dim, 1])])[:,
-                     0]
+
             k_u = k if k <= self.control_horizon - 1 else self.control_horizon - 1
             objective += quad_form(X_mean, self.CQC) + quad_form(self.u[:, k_u]-self.u_s_holder, self.R)
-            constraints += [self.mean[:, k + 1] == self.A @ self.mean[:, k] + self.B @ self.K @ (X_sigma) + self.B @ self.u[:, k_u]]
-            constraints += [self.sigma[:, k + 1] == self.A @ self.sigma[:,k] + self.B @ self.K @ (X_sigma)+ self.B @ self.u[:, k_u]]
+            constraints += [self.mean[:, k + 1] == self.A @ self.mean[:, k] + self.B @ self.u[:, k_u]]
 
             if args['apply_state_constraints']:
                 constraints += [self.s_bound_low <= self.x[:self.state_dim, k],
                                 self.x[:self.state_dim, k] <= self.s_bound_high]
             if args['apply_action_constraints'] and k < self.control_horizon:
-                constraints += [self.a_bound_low <= self.K @ (X_sigma) + self.u[:, k],
-                                self.K @ (X_sigma) + self.u[:, k] <= self.a_bound_high]
+                constraints += [self.a_bound_low <= self.u[:, k],
+                                 self.u[:, k] <= self.a_bound_high]
         X_mean = vstack([reshape(self.mean[:, -1], (self.latent_dim, 1)), reshape(self.ref, (self.state_dim, 1))])[:, 0]
 
         objective += quad_form(X_mean, self.CQC)
